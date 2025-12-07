@@ -1,0 +1,9 @@
+langchain_google_genai
+langchain
+langchain-community
+chromadb
+langchain_huggingface
+faiss-cpu
+langchain-text-splitters
+pypdf
+sentence-transformers
