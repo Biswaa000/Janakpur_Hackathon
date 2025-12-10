@@ -205,7 +205,7 @@ We welcome contributions to the Anonymous Project! Please follow these steps:
     
 -   *Bibisha Basnet* – Frontend & UI/UX Design
     
--   *Bishal Sharma* – Backend & AI Integration
+-   *Bishal Sharma* – Backend & AI Integration (Notebook and backend_fastapi folder)
     
 
 ----------
