@@ -2,5 +2,11 @@ backend/.env
 backend/node_modules/
 frontend/.env
 frontend/node_modules/
+admin_panel/.env
+admin_panel/node_modules/
 backend_fastapi/.env
+backend_fastapi/.venv/
 backend_fastapi/__pycache__
+*.env
+!*.env.example
+!example.env
