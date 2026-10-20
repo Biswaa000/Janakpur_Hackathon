@@ -259,13 +259,23 @@ async function seedDatabase() {
     console.log('\n📋 Total NGOs per category (some NGOs handle multiple categories)');
     
     // Exit successfully
-    process.exit(0);
+    if (require.main === module) {
+      process.exit(0);
+    }
+    return insertResult;
   } catch (error) {
     console.error('❌ Seeding error:', error.message);
     console.error('Full error:', error);
-    process.exit(1);
+    if (require.main === module) {
+      process.exit(1);
+    }
+    throw error;
   }
 }
 
-// Run the seed function
-seedDatabase();
+// Run the seed function if run directly
+if (require.main === module) {
+  seedDatabase();
+}
+
+module.exports = { seedDatabase, dummyNGOProfiles };

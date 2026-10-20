@@ -10,19 +10,26 @@ from langchain_community.vectorstores import FAISS
 
 load_dotenv()
 
-# --------------------------
-# Load LLM
-# --------------------------
-model = ChatGoogleGenerativeAI(model="gemini-2.5-flash",
-                               max_retries=0)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def get_model():
+    api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return None
+    try:
+        return ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key=api_key, max_retries=0)
+    except Exception as e:
+        print(f"Error initializing ChatGoogleGenerativeAI: {e}")
+        return None
 
 # --------------------------
 # Load embeddings + FAISS DB
 # --------------------------
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
+index_path = os.path.join(BASE_DIR, "faiss_index")
 vector_store = FAISS.load_local(
-    "core/faiss_index",
+    index_path,
     embeddings,
     allow_dangerous_deserialization=True
 )
@@ -83,9 +90,19 @@ def ask_chatbot(session_id: str, question: str) -> str:
     if session_id not in chat_sessions:
         chat_sessions[session_id] = []
 
+    model = get_model()
+    if model is None:
+        answer = "Namaste! The Nepal Legal Assistant chatbot is running. To enable AI responses, please configure GOOGLE_API_KEY in backend_fastapi/.env."
+        chat_sessions[session_id].append({"role": "user", "message": question})
+        chat_sessions[session_id].append({"role": "ai", "message": answer})
+        return answer
+
     # Retrieve context from vector DB
-    docs = retriever.invoke(question)
-    context = "\n\n".join([d.page_content for d in docs])
+    try:
+        docs = retriever.invoke(question)
+        context = "\n\n".join([d.page_content for d in docs])
+    except Exception as e:
+        context = ""
 
     # Prepare history text
     history_text = get_history_text(session_id)
@@ -98,7 +115,10 @@ def ask_chatbot(session_id: str, question: str) -> str:
     })
 
     # Call LLM
-    answer = model.invoke(final_prompt).content
+    try:
+        answer = model.invoke(final_prompt).content
+    except Exception as e:
+        answer = f"Error generating response: {e}"
 
     # Save conversation
     chat_sessions[session_id].append({"role": "user", "message": question})
